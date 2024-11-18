@@ -5,37 +5,148 @@ from tkinter import ttk
 from tkinter import messagebox
 from ttkbootstrap import Style
 
+
 def save_set(entry, data, **kwargs):
     set_name = entry.get()
     if set_name:
-        data['sets'][set_name] = []
-        with open('data.json', 'w') as file:
-            json.dump(data, file)
-        messagebox.showinfo('Success', f'Set {set_name} saved successfully')
+        if set_name not in data['sets']:
+            data['sets'][set_name] = []
+            with open('data.json', 'w') as file:
+                json.dump(data, file)
+            messagebox.showinfo('Success', f'Set "{
+                                set_name}" saved successfully')
+            if 'options' in kwargs:
+                for option in kwargs['options']:
+                    option['values'] = list(data['sets'].keys())
+        else:
+            messagebox.showerror('Error', f'Set "{set_name}" already exists')
     else:
         messagebox.showerror('Error', 'Set name cannot be empty')
     entry.set('')
-    if 'options' in kwargs:
-        options = kwargs['options']
-        for o in options:
-            o['values'] = list(data['sets'].keys())
 
 
-def save_card(word, definition, data, set_name):
+def save_card(word, definition, data, set_name, card_set_combo):
     card_word = word.get()
     card_definition = definition.get()
     if card_word and card_definition:
         try:
-            data['sets'][set_name].append({'word': card_word, 'definition': card_definition})
+            data['sets'][set_name].append(
+                {'word': card_word, 'definition': card_definition})
             with open('data.json', 'w') as file:
                 json.dump(data, file)
             messagebox.showinfo('Success', 'Card saved successfully')
             word.set('')
             definition.set('')
         except KeyError:
-            messagebox.showerror('Error', 'Set not found')
+            messagebox.showerror(
+                'Error', 'Set not found. Please select a valid set.')
+            card_set_combo['values'] = list(data['sets'].keys())
     else:
         messagebox.showerror('Error', 'Word and definition cannot be empty')
+
+
+def review_cards_logic(set_name, data, state, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button):
+    """
+    Display the current card in the review process.
+    """
+    if not state['cards']:
+        messagebox.showinfo(
+            'Info', 'You have completed all cards in this set!')
+        progress_label.config(text='Progress: 100%')
+        word_label.config(text='Word: ???')
+        definition_label.config(text='Definition: ???')
+
+        flip_button.config(state='disabled')
+        correct_button.config(state='disabled')
+        wrong_button.config(state='disabled')
+        return
+
+    current_card = state['cards'][state['index']]
+    if not state['flipped']:
+        # Show word
+        word_label.config(text=f"Word: {current_card['word']}")
+        definition_label.config(text="Definition: ???")
+        flip_button.config(state='normal')
+        correct_button.config(state='disabled')
+        wrong_button.config(state='disabled')
+    else:
+        # Show definition after flip
+        definition_label.config(
+            text=f"Definition: {current_card['definition']}")
+        word_label.config(text="Word: ???")
+        flip_button.config(state='disabled')
+        correct_button.config(state='normal')
+        wrong_button.config(state='normal')
+
+
+def flip_card(state, word_label, definition_label, flip_button, correct_button, wrong_button):
+    """
+    Flip the card to reveal the definition.
+    """
+    state['flipped'] = True
+    review_cards_logic(
+        None, None, state, word_label, definition_label, None, flip_button, correct_button, wrong_button
+    )
+
+
+def mark_card(state, data, correct, set_name, progress_label, word_label, definition_label, flip_button, correct_button, wrong_button):
+    """
+    Mark the card as correct or wrong and move to the next card.
+    """
+    if correct:
+        # Remove the current card if marked correct
+        state['cards'].pop(state['index'])
+    else:
+        # Move to the next card, and keep the current card
+        state['index'] = (state['index'] + 1) % len(state['cards'])
+
+    total_cards = len(data['sets'][set_name])
+    done = total_cards - len(state['cards'])
+    progress = (done / total_cards) * 100
+    progress_label.config(text=f"Progress: {progress:.2f}%")
+
+    state['flipped'] = False
+
+    if state['cards']:
+        # Move to the next card
+        state['index'] %= len(state['cards'])
+    review_cards_logic(
+        set_name, data, state, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button
+    )
+
+
+def start_review(review_set_var, data, state, review_frame, start_button, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, select_set_combo, select_set_label):
+    """
+    Start the review process by showing the review screen.
+    """
+    set_name = review_set_var.get()
+    if set_name in data['sets'] and data['sets'][set_name]:
+        state['cards'] = data['sets'][set_name].copy()
+        state['index'] = 0
+        state['flipped'] = False
+        progress_label.config(text='Progress: 0%')
+
+        select_set_combo.pack_forget()
+        select_set_label.pack_forget()
+        start_button.pack_forget()
+
+        progress_label.pack(pady=8)
+        word_label.pack(pady=8)
+        definition_label.pack(pady=8)
+
+        # Display first card
+        review_cards_logic(
+            set_name, data, state, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button
+        )
+
+        flip_button.pack(side=tk.BOTTOM, pady=8)
+        correct_button.pack(side=tk.BOTTOM, pady=8)
+        wrong_button.pack(side=tk.BOTTOM, pady=8)
+    else:
+        messagebox.showerror('Error', 'Set is empty or not found')
+        word_label.config(text='Word: ???')
+        definition_label.config(text='Definition: ???')
+        progress_label.config(text='Progress: 0%')
 
 
 def main():
@@ -45,23 +156,15 @@ def main():
     root.geometry('400x400')
     root.resizable(False, False)
 
-    # check for presence of data.json file
     if not pathlib.Path('data.json').exists():
         with open('data.json', 'w') as f:
-            json.dump({
-                'sets': {},
-                'data': []
-            }, f)
+            json.dump({'sets': {}, 'data': []}, f)
 
     with open('data.json', 'r') as file:
         try:
             data = json.load(file)
         except json.JSONDecodeError:
-            data = {
-                'sets': {},
-                'data': []
-            }
-
+            data = {'sets': {}, 'data': []}
 
     notebook = ttk.Notebook(root)
     notebook.pack(expand=True, fill='both', padx=10, pady=5)
@@ -74,88 +177,85 @@ def main():
     notebook.add(card_frame, text='Card')
     notebook.add(review_frame, text='Review')
 
-    set_var = tk.StringVar()
-
-    set_option = ttk.Combobox(card_frame, textvariable=set_var)
-    set_option_r = ttk.Combobox(review_frame, textvariable=set_var)
-
     # Set Frame
-    set_label = tk.Label(set_frame, text='Set Name')
-    set_label.pack(pady=8)
-    set_name = tk.StringVar()
-    set_entry = tk.Entry(set_frame, textvariable=set_name)
-    set_entry.pack(pady=8)
-    set_button = tk.Button(
-        set_frame, text='Create Set', command=lambda: save_set(set_name, data, options=[set_option, set_option_r])
-    )
-    set_button.pack(pady=8)
+    set_name_var = tk.StringVar()
+    ttk.Label(set_frame, text='Set Name').pack(pady=8)
+    set_name_entry = ttk.Entry(set_frame, textvariable=set_name_var)
+    set_name_entry.pack(pady=8)
+    ttk.Button(
+        set_frame,
+        text='Create Set',
+        command=lambda: save_set(set_name_var, data, options=[
+                                 card_set_combo, review_set_combo])
+    ).pack(pady=8)
 
     # Card Frame
-    card_label = tk.Label(card_frame, text='Card', font=('Arial', 18))
-    card_label.pack(pady=12)
-    select_set_label = tk.Label(card_frame, text='Select Set')
-    select_set_label.pack(pady=8)
-    set_var.set('Select Set')
-    set_option.pack(pady=8)
-    options = list(data['sets'].keys())
-    set_option['values'] = options
-    if options:
-        set_option.current(0)
-    tk.Label(card_frame, text='Word').pack(pady=5)
-    word = tk.StringVar()
-    card_word = tk.Entry(card_frame, textvariable=word)
-    card_word.pack(pady=8)
-    tk.Label(card_frame, text='Definition').pack(pady=5)
-    definition = tk.StringVar()
-    card_definition = tk.Entry(card_frame, textvariable=definition)
-    card_definition.pack(pady=8)
-    card_button = tk.Button(
-        card_frame, text='Save Card', command=lambda: save_card(word, definition, data, set_var.get())
-    )
-    card_button.pack(pady=8)
+    card_set_var = tk.StringVar()
+    ttk.Label(card_frame, text='Select Set').pack(pady=8)
+    card_set_combo = ttk.Combobox(card_frame, textvariable=card_set_var)
+    card_set_combo['values'] = list(data['sets'].keys())
+    card_set_combo.pack(pady=8)
+
+    word_var = tk.StringVar()
+    definition_var = tk.StringVar()
+    ttk.Label(card_frame, text='Word').pack(pady=8)
+    ttk.Entry(card_frame, textvariable=word_var).pack(pady=8)
+    ttk.Label(card_frame, text='Definition').pack(pady=8)
+    ttk.Entry(card_frame, textvariable=definition_var).pack(pady=8)
+    ttk.Button(
+        card_frame,
+        text='Save Card',
+        command=lambda: save_card(
+            word_var, definition_var, data, card_set_var.get(), card_set_combo)
+    ).pack(pady=8)
 
     # Review Frame
-    tk.Label(review_frame, text='Review', font=('Arial', 18)).pack(pady=12)
-    a = tk.Label(review_frame, text='Select Set')
-    a.pack(pady=8)
-    set_var.set('Select Set')
-    set_option_r.pack(pady=8)
-    options = list(data['sets'].keys())
-    set_option_r['values'] = options
-    if options:
-        set_option_r.current(0)
+    review_set_var = tk.StringVar()
+    state = {'cards': [], 'index': 0, 'flipped': False}
 
-    clicked = tk.BooleanVar(value=False)
-    def show_definition():
-        if not clicked.get():
-            clicked.set(True)
-        else:
-            clicked.set(False)
+    select_set_label = ttk.Label(review_frame, text='Select Set')
+    select_set_label.pack(pady=8)
+    review_set_combo = ttk.Combobox(review_frame, textvariable=review_set_var)
+    review_set_combo['values'] = list(data['sets'].keys())
+    review_set_combo.pack(pady=8)
 
-    review_frame.bind('<Button-1>', lambda e: show_definition())
-    if set_var.get() in data['sets']:
-        a.destroy()
-        set_option_r.destroy()
-        cards = data['sets'][set_var.get()]
-        question = tk.StringVar()
-        answer = tk.StringVar()
-        answer.set('')
-        tk.Label(review_frame, textvariable=question).pack(pady=5)
-        tk.Label(review_frame, textvariable=answer).pack(pady=5)
-        for card in cards:
-            question.set(card['word'])
-            review_frame.wait_variable(clicked)
-            answer.set(card['definition'])
-            review_frame.wait_variable(clicked)
-            answer.set('')
+    start_button = ttk.Button(
+        review_frame,
+        text="Start Review",
+        command=lambda: start_review(
+            review_set_var, data, state, review_frame, start_button, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, review_set_combo, select_set_label
+        )
+    )
+    start_button.pack(pady=8)
 
-        question.set('')
-        tk.Label(review_frame, text="Chipi Chipi Chapa Chapa", font=("Arial", 18)).pack(pady=5)
+    progress_label = ttk.Label(review_frame, text="Progress: 0%")
+    word_label = ttk.Label(review_frame, text="Word: ???")
+    definition_label = ttk.Label(review_frame, text="Definition: ???")
+
+    flip_button = ttk.Button(
+        review_frame, text="Flip", state='disabled', command=lambda: flip_card(state, word_label, definition_label, flip_button, correct_button, wrong_button)
+    )
+
+    correct_button = ttk.Button(
+        review_frame,
+        text='Correct',
+        state='disabled',
+        command=lambda: mark_card(state, data, True, review_set_var.get(
+        ), progress_label, word_label, definition_label, flip_button, correct_button, wrong_button)
+    )
+
+    wrong_button = ttk.Button(
+        review_frame,
+        text='Wrong',
+        state='disabled',
+        command=lambda: mark_card(state, data, False, review_set_var.get(
+        ), progress_label, word_label, definition_label, flip_button, correct_button, wrong_button)
+    )
 
     root.mainloop()
 
 
-
 if __name__ == '__main__':
     main()
+
     # pathlib.Path('data.json').unlink()
