@@ -24,7 +24,7 @@ def review_cards_logic(set_name, data, state, word_label, definition_label, prog
     else:
         definition_label.config(
             text=f"Definition: {current_card['definition']}")
-        word_label.config(text="Word: ???")
+        word_label.config(text=f"Word: {current_card['word']}")
         flip_button.config(state='disabled')
         correct_button.config(state='normal')
         wrong_button.config(state='normal')
