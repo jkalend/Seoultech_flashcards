@@ -57,11 +57,24 @@ def create_gui(data):
     review_set_combo['values'] = list(data['sets'].keys())
     review_set_combo.pack(pady=8)
 
+    def switch_shuffle(shuffle_button):
+        if shuffle_button['text'] == 'Shuffle disabled':
+            shuffle_button['text'] = 'Shuffle enabled'
+        else:
+            shuffle_button['text'] = "Shuffle disabled"
+
+    shuffle_button = ttk.Button(
+        review_frame,
+        text="Shuffle disabled",
+        command=lambda: switch_shuffle(shuffle_button)
+    )
+    shuffle_button.pack(pady=8)
+
     start_button = ttk.Button(
         review_frame,
         text="Start Review",
         command=lambda: start_review(
-            review_set_var, data, state, review_frame, start_button, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, review_set_combo, select_set_label
+            review_set_var, data, state, review_frame, start_button, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, review_set_combo, select_set_label, shuffle_button
         )
     )
     start_button.pack(pady=8)

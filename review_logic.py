@@ -1,4 +1,5 @@
 from tkinter import messagebox
+import random
 
 
 def review_cards_logic(set_name, data, state, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button):
@@ -55,10 +56,12 @@ def mark_card(state, data, correct, set_name, progress_label, word_label, defini
                        progress_label, flip_button, correct_button, wrong_button)
 
 
-def start_review(review_set_var, data, state, review_frame, start_button, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, select_set_combo, select_set_label):
+def start_review(review_set_var, data, state, review_frame, start_button, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, select_set_combo, select_set_label, shuffle_button):
     set_name = review_set_var.get()
     if set_name in data['sets'] and data['sets'][set_name]:
         state['cards'] = data['sets'][set_name].copy()
+        if shuffle_button['text'] == 'Shuffle enabled':
+            random.shuffle(state['cards'])
         state['index'] = 0
         state['flipped'] = False
         progress_label.config(text='Progress: 0%')
@@ -66,6 +69,7 @@ def start_review(review_set_var, data, state, review_frame, start_button, word_l
         select_set_combo.pack_forget()
         select_set_label.pack_forget()
         start_button.pack_forget()
+        shuffle_button.pack_forget()
 
         progress_label.pack(pady=8)
         word_label.pack(pady=8)
