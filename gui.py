@@ -7,7 +7,7 @@ from review_logic import start_review, flip_card, mark_card
 
 def create_gui(data):
     root = tk.Tk()
-    style = Style('superhero')
+    Style('superhero')
     root.title('Flashcards')
     root.geometry('400x400')
     root.resizable(False, False)
