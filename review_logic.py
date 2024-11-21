@@ -1,10 +1,10 @@
 from tkinter import messagebox
 
 
-def review_cards_logic(set_name, data, state, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button):
+def review_cards_logic(set_name, data, state, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, score=None):
     if not state['cards']:
         messagebox.showinfo(
-            'Info', 'You have completed all cards in this set!')
+            'Info', f"You have completed all cards in this set!\nSuccess rate: {score['correct'] / (score['correct'] + score['wrong']) * 100:.2f}%")
         progress_label.config(text='Progress: 100%')
         word_label.config(text='Word: ???')
         definition_label.config(text='Definition: ???')
@@ -36,11 +36,13 @@ def flip_card(state, word_label, definition_label, flip_button, correct_button, 
                        None, flip_button, correct_button, wrong_button)
 
 
-def mark_card(state, data, correct, set_name, progress_label, word_label, definition_label, flip_button, correct_button, wrong_button):
+def mark_card(state, data, correct, set_name, progress_label, word_label, definition_label, flip_button, correct_button, wrong_button, score):
     if correct:
         state['cards'].pop(state['index'])
+        score['correct'] += 1
     else:
         state['index'] = (state['index'] + 1) % len(state['cards'])
+        score['wrong'] += 1
 
     total_cards = len(data['sets'][set_name])
     done = total_cards - len(state['cards'])
@@ -52,7 +54,7 @@ def mark_card(state, data, correct, set_name, progress_label, word_label, defini
     if state['cards']:
         state['index'] %= len(state['cards'])
     review_cards_logic(set_name, data, state, word_label, definition_label,
-                       progress_label, flip_button, correct_button, wrong_button)
+                       progress_label, flip_button, correct_button, wrong_button, score)
 
 
 def start_review(review_set_var, data, state, review_frame, start_button, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, select_set_combo, select_set_label):
