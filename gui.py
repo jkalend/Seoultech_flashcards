@@ -75,7 +75,8 @@ def create_gui(data):
         review_frame,
         text="Start Review",
         command=lambda: start_review(
-            review_set_var, data, state, review_frame, start_button, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, review_set_combo, select_set_label, shuffle_button
+            review_set_var, data, state, review_frame, start_button, word_label, definition_label, progress_label,
+            flip_button, correct_button, wrong_button, review_set_combo, select_set_label, shuffle_button
         )
     )
     start_button.pack(pady=8)
@@ -88,9 +89,11 @@ def create_gui(data):
         state, word_label, definition_label, flip_button, correct_button, wrong_button))
 
     correct_button = ttk.Button(review_frame, text='Correct', state='disabled', command=lambda: mark_card(
-        state, data, True, review_set_var.get(), progress_label, word_label, definition_label, flip_button, correct_button, wrong_button, score))
+        state, data, True, review_set_var.get(), progress_label, word_label, definition_label, flip_button,
+        correct_button, wrong_button, review_set_combo, select_set_label, shuffle_button, start_button, score))
 
     wrong_button = ttk.Button(review_frame, text='Wrong', state='disabled', command=lambda: mark_card(
-        state, data, False, review_set_var.get(), progress_label, word_label, definition_label, flip_button, correct_button, wrong_button, score))
+        state, data, False, review_set_var.get(), progress_label, word_label, definition_label, flip_button,
+        correct_button, wrong_button, review_set_combo, select_set_label, shuffle_button, start_button, score))
 
     root.mainloop()

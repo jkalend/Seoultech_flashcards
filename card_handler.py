@@ -1,4 +1,3 @@
-import json
 from tkinter import messagebox
 from data_handler import save_data
 
@@ -28,8 +27,7 @@ def save_card(word, definition, data, set_name, card_set_combo):
         try:
             data['sets'][set_name].append(
                 {'word': card_word, 'definition': card_definition})
-            with open('data.json', 'w') as file:
-                json.dump(data, file)
+            save_data(data)
             messagebox.showinfo('Success', 'Card saved successfully')
             word.set('')
             definition.set('')

@@ -2,7 +2,7 @@ from tkinter import messagebox
 import random
 
 
-def review_cards_logic(set_name, data, state, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, score=None):
+def review_cards_logic(set_name, data, state, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, select_set_combo, select_set_label, shuffle_button, start_button, score=None):
     if not state['cards']:
         messagebox.showinfo(
             'Info', f"You have completed all cards in this set!\nSuccess rate: {score['correct'] / (score['correct'] + score['wrong']) * 100:.2f}%")
@@ -13,6 +13,23 @@ def review_cards_logic(set_name, data, state, word_label, definition_label, prog
         flip_button.config(state='disabled')
         correct_button.config(state='disabled')
         wrong_button.config(state='disabled')
+
+        progress_label.pack_forget()
+        word_label.pack_forget()
+        definition_label.pack_forget()
+        flip_button.pack_forget()
+        correct_button.pack_forget()
+        wrong_button.pack_forget()
+
+        select_set_label.pack(pady=8)
+        select_set_combo.pack(pady=8)
+        shuffle_button.pack(pady=8)
+        start_button.pack(pady=8)
+
+        if score:
+            score['correct'] = 0
+            score['wrong'] = 0
+
         return
 
     current_card = state['cards'][state['index']]
@@ -34,10 +51,10 @@ def review_cards_logic(set_name, data, state, word_label, definition_label, prog
 def flip_card(state, word_label, definition_label, flip_button, correct_button, wrong_button):
     state['flipped'] = True
     review_cards_logic(None, None, state, word_label, definition_label,
-                       None, flip_button, correct_button, wrong_button)
+                       None, flip_button, correct_button, wrong_button, None, None, None, None)
 
 
-def mark_card(state, data, correct, set_name, progress_label, word_label, definition_label, flip_button, correct_button, wrong_button, score):
+def mark_card(state, data, correct, set_name, progress_label, word_label, definition_label, flip_button, correct_button, wrong_button, select_set_combo, select_set_label, shuffle_button, start_button, score):
     if correct:
         state['cards'].pop(state['index'])
         score['correct'] += 1
@@ -55,7 +72,8 @@ def mark_card(state, data, correct, set_name, progress_label, word_label, defini
     if state['cards']:
         state['index'] %= len(state['cards'])
     review_cards_logic(set_name, data, state, word_label, definition_label,
-                       progress_label, flip_button, correct_button, wrong_button, score)
+                       progress_label, flip_button, correct_button, wrong_button, select_set_combo, select_set_label,
+                       shuffle_button, start_button, score=score)
 
 
 def start_review(review_set_var, data, state, review_frame, start_button, word_label, definition_label, progress_label, flip_button, correct_button, wrong_button, select_set_combo, select_set_label, shuffle_button):
@@ -78,7 +96,8 @@ def start_review(review_set_var, data, state, review_frame, start_button, word_l
         definition_label.pack(pady=8)
 
         review_cards_logic(set_name, data, state, word_label, definition_label,
-                           progress_label, flip_button, correct_button, wrong_button)
+                           progress_label, flip_button, correct_button, wrong_button,
+                           select_set_combo, select_set_label, shuffle_button, start_button)
 
         flip_button.pack(side='bottom', pady=8)
         correct_button.pack(side='bottom', pady=8)
