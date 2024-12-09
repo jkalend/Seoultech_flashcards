@@ -50,6 +50,7 @@ def create_gui(data):
     # Review Frame
     review_set_var = tk.StringVar()
     state = {'cards': [], 'index': 0, 'flipped': False}
+    score = {'correct': 0, 'wrong': 0}
 
     select_set_label = ttk.Label(review_frame, text='Select Set')
     select_set_label.pack(pady=8)
@@ -87,9 +88,9 @@ def create_gui(data):
         state, word_label, definition_label, flip_button, correct_button, wrong_button))
 
     correct_button = ttk.Button(review_frame, text='Correct', state='disabled', command=lambda: mark_card(
-        state, data, True, review_set_var.get(), progress_label, word_label, definition_label, flip_button, correct_button, wrong_button))
+        state, data, True, review_set_var.get(), progress_label, word_label, definition_label, flip_button, correct_button, wrong_button, score))
 
     wrong_button = ttk.Button(review_frame, text='Wrong', state='disabled', command=lambda: mark_card(
-        state, data, False, review_set_var.get(), progress_label, word_label, definition_label, flip_button, correct_button, wrong_button))
+        state, data, False, review_set_var.get(), progress_label, word_label, definition_label, flip_button, correct_button, wrong_button, score))
 
     root.mainloop()
