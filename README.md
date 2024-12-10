@@ -37,7 +37,7 @@ Run the application:
    ```
 ## Demo video
 
-Add link to video.
+For a detailed demonstration of FlashLearn application [follow the link here](https://www.youtube.com/shorts/tWCc1jfP5NU).
 
 ## File Structure
 
