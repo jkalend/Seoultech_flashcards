@@ -1,6 +1,8 @@
-# FlashLearn 
+<p align="center">
+    <img src="https://capsule-render.vercel.app/api?type=waving&height=250&color=gradient&text=FlashLearn&reversal=false&desc=smart%20flashcards%20app&descAlignY=64"/>
+</p>
 
-A simple and user-friendly flashcard application built with Python and Tkinter. This app allows users to create, organize, and review flashcards to enhance learning and retention. Simple, yet flexible tool for students and educators.
+FlashLearn is a simple and user-friendly flashcards application built with Python and Tkinter. This app allows users to create, organize, and review flashcards to enhance learning and retention. Simple, yet flexible tool for students and educators.
 
 ## Features  
 
@@ -22,7 +24,7 @@ A simple and user-friendly flashcard application built with Python and Tkinter. 
    cd Seoultech_flashcards
    ```
 
-2. Install requirements
+2. Install requirements:
    ```bash
    pip install -r requirements.txt
    ```
@@ -50,7 +52,9 @@ Add link to video.
 
 ## Program algorithm
 
-Insert graf.
+<p align="center">
+    <img src="algo.png"/>
+</p>
 
 ## License
 
