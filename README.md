@@ -53,7 +53,7 @@ Add link to video.
 ## Program algorithm
 
 <p align="center">
-    <img src="algo.png"/>
+    <img src="algorithm.png"/>
 </p>
 
 ## License
